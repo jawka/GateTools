@@ -19,7 +19,7 @@ PhaseSpace::PhaseSpace(std::string ps_string, std::string scanner_mode, int anal
 	std::cout << multiple_flag << std::endl;
 	if (multiple_flag)
 		multiple_files_flag = true;
-	else if (analysis_mode != 10)
+	else if (analysis_mode != 10 && analysis_mode != 12)
 		init(0);
 }
 

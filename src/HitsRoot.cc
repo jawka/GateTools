@@ -48,7 +48,7 @@ HitsRoot::HitsRoot(std::string ro_string, std::string scanner_mode, int analysis
 		std::cout << "Blurring:" << std::endl << "x:" << sigma_blurring_x << std::endl << "y:" << sigma_blurring_y << std::endl << "z:" << sigma_blurring_z << std::endl;
 	}
 	
-	if (atoi(std::getenv("PRM_MODE")) != 10)
+	if (atoi(std::getenv("PRM_MODE")) != 10 && atoi(std::getenv("PRM_MODE")) != 12)
 	{
 		init();
 	}
@@ -1079,6 +1079,115 @@ void HitsRoot::spectra_energy_analysis()
 
 
 
+
+
+
+
+
+void HitsRoot::rate_analysis()
+{
+		
+	TH1F *energy_deposition = new TH1F( "Deposited energy", "Deposited energy", 5000, 0, 5.);
+	energy_deposition->GetXaxis()->SetTitle("Energy [MeV]");
+	energy_deposition->GetYaxis()->SetTitle("Number of particles");
+
+	TH1F *energy_during = new TH1F( "Deposited energy during irradiation", "Deposited energy during irradiation", 500, 0, 5.);
+	energy_during->GetXaxis()->SetTitle("Energy [MeV]");
+	energy_during->GetYaxis()->SetTitle("Number of particles");
+
+	TH1F *energy_after = new TH1F( "Deposited energy after irradiation", "Deposited energy after irradiation", 500, 0, 5.);
+	energy_after->GetXaxis()->SetTitle("Energy [MeV]");
+	energy_after->GetYaxis()->SetTitle("Number of particles");
+
+	TH1F *time_during = new TH1F( "Time hit during irradiation", "Time hit during irradiation", 100, 0, 1);
+	time_during->GetXaxis()->SetTitle("Time [ns]");
+	time_during->GetYaxis()->SetTitle("Number of particles");
+
+	TH1F *time_after = new TH1F( "Time hit after irradiation", "Time hit after irradiation", 1000, 0, 10000);
+	time_after->GetXaxis()->SetTitle("Time [s]");
+	time_after->GetYaxis()->SetTitle("Number of particles");
+
+	Int_t i(0);
+	Int_t nbytes(0);
+	
+	Int_t energy_during_count(0);
+	Int_t energy_after_count(0);
+	Int_t energy_during_count_10keV(0);
+	Int_t energy_after_count_10keV(0);
+
+
+	std::cout << "Number of entries: " << entries << std::endl;
+
+	std::cout << "-------SETUP-------" << std::endl;
+	std::cout << "During irradiation: " << energy_during_count << std::endl;
+	std::cout << "After irradiation: " << energy_after_count << std::endl;
+	std::cout << "During irradiation above 10keV: " << energy_during_count_10keV << std::endl;
+	std::cout << "After irradiation above 10keV: " << energy_after_count_10keV << std::endl;
+	std::cout << "--------END--------" << std::endl;
+
+	while(i < entries)
+	{
+		if (i%1000000 == 0)
+			std::cout << i/1000000 << " M events analysed." << std::endl;
+	
+		nbytes += HitsChain->GetEntry( i );
+
+		energy_deposition->Fill(edep);
+
+		if (time <= 1000000.)
+		{
+			energy_during_count++;
+			energy_during->Fill(edep);
+			time_during->Fill(time);
+			if (edep>=0.01)
+				energy_during_count_10keV++;
+		}
+
+		else if (time > 1000000.)
+		{
+			energy_after_count++;
+			energy_after->Fill(edep);
+			time_after->Fill(time/1000000000.);
+			if (edep>=0.01)
+				energy_after_count_10keV++;
+		}
+
+	i++;
+
+	}
+
+	Int_t digits = (2);	
+	Int_t digits_energy = (4);
+	
+	std::cout << "-------RESULTS-------" << std::endl;
+	std::cout << "During irradiation: " << energy_during_count << std::endl;
+	std::cout << "After irradiation: " << energy_after_count << std::endl;
+	std::cout << "During irradiation above 10keV: " << energy_during_count_10keV << std::endl;
+	std::cout << "After irradiation above 10keV: " << energy_after_count_10keV << std::endl;
+	std::cout << "--------END--------" << std::endl;
+
+	std::string f_name = "/home/baran/Desktop/root_hits_"+scanner_name+"_rate_analysis.root";
+	TFile fw(f_name.c_str(),"RECREATE");
+	TCanvas* plot = new TCanvas("Hits output","Hits output",2000,1400);
+	plot->Divide(3,2);
+	plot->cd(1); energy_deposition->Draw();energy_deposition->Write();
+	plot->cd(2); energy_during->Draw();energy_during->Write();
+	plot->cd(3); time_during->Draw();time_during->Write();
+	plot->cd(4); energy_after->Draw();energy_after->Write();
+	plot->cd(5); time_after->Draw();time_after->Write();
+	plot->Update();
+
+//	TImage *img = TImage::Create();
+//	img->FromPad(plot);
+//	f_name = "/home/baran/Desktop/root_hits_"+scanner_name+"_rate_analysis.png";
+//	img->WriteImage(f_name.c_str());
+
+	fw.Print();
+	fw.Close();
+
+
+
+}
 
 
 

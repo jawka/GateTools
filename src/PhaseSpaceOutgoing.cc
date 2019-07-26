@@ -11,8 +11,7 @@ PhaseSpaceOutgoing::PhaseSpaceOutgoing(std::string pso_string, std::string scann
 	annihil_gammas_no = 0;
 	file_name = pso_string + file_name_extension;
 	scanner_name = scanner_mode;
-
-	if (atoi(std::getenv("PRM_MODE")) != 10)
+	if (atoi(std::getenv("PRM_MODE")) != 10 && atoi(std::getenv("PRM_MODE")) != 12)
 		init();
 
 }

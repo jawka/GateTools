@@ -177,6 +177,7 @@ public:
 	int hitsVectorAnalysis(std::vector<Hit> vec_hits, TH1F* annihil_gamma_energy_deposition_spectrum);
 	void analysis();
 	void spectra_energy_analysis();
+	void rate_analysis();
 
 	// Setters
 	void setPositrons(std::vector<Positron>* vec_positrons);

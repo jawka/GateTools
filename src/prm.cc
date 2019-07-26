@@ -13,6 +13,7 @@
 #include "HitsRoot.hh"
 #include "Dose.hh"
 #include "Plot.hh"
+#include "Coincidences.hh"
 
 #define SET_PRM_ENV_VAR(option, variable, default_value) { \
 	if (vm.count(option)) { \
@@ -47,6 +48,8 @@ int main(int argc, char *argv[])
 	modes_desciption << "8    #TODO Kinetic energy vs deposited energy analysis." << std::endl;
 	modes_desciption << "9    Full analysis." << std::endl;
 	modes_desciption << "10   Original and reconstructed data plots." << std::endl;
+	modes_desciption << "11   Count rate analysis." << std::endl;
+	modes_desciption << "12   Conversion the root file with coincidences to the extended FOV for sensitivity purposes." << std::endl;
 
 
 	po::options_description desc("Help to the prm(proton range monitoring) program\n\nArguments");
@@ -57,22 +60,21 @@ int main(int argc, char *argv[])
 	("scanner_name", po::value<std::string>(), "Name of the scanner, the result files will start from this expression and will be stored in Desktop (default: test_scanner_name)")
 	("ps_files_no", po::value<std::string>(), "Number of the phaseSpace secondaries actors (default: 1)")
 	("mode", po::value<std::string>(), modes_desciption.str().c_str())
-	("e_min", po::value<std::string>(), "Fixed minimum energy threshold [MeV] (default: 0.15 MeV); For a photoelectric absorbtion use 0.35")
-	("e_max", po::value<std::string>(), "Fixed maximum energy threshold [MeV] (default: 0.4 MeV); For a photoelectric absorbtion use 0.85")
+	("e_min", po::value<std::string>(), "Fixed minimum energy threshold [MeV] (default: 0.2 MeV); For a photoelectric absorbtion use 0.35")
+	("e_max", po::value<std::string>(), "Fixed maximum energy threshold [MeV] (default: 0.38 MeV); For a photoelectric absorbtion use 0.85")
 	("edep_process", po::value<std::string>(), "Process causing (default: compt). For photoelectric absorbtion use phot")
 	("phantom_min", po::value<std::string>(), "Beginning Z(float) position of the phantom in the world coordinates [mm] (default: -200.).")
 	("phantom_max", po::value<std::string>(), "End Z(float) position of the phantom  in the world coordinates [mm] (default: 200.).")
 	("phantom_bins_no", po::value<std::string>(), "Number of bins in results histogram corresponding to the phantom binning (default: 200)")
-	("res_blur_mode", po::value<std::string>(), "Resolurion blurring depends from the mode. There is four different modes: barrel, dualhead, lso, random (default: barrel)")
+	("res_blur_mode", po::value<std::string>(), "Resolution blurring depends from the mode. There is four different modes: barrel, dualhead, lso, random (default: barrel)")
 	("res_blur_x", po::value<std::string>(), "Works only with the random blurring_mode, otwerwise default value is set. Resolution blurring in x direction (sigma) [mm] (default for random blurring_mode: 3.0)")
 	("res_blur_y", po::value<std::string>(), "Works only with the random blurring_mode, otwerwise default value is set. Resolution blurring in y direction (sigma) [mm] (default for random blurring_mode: 3.0)")
 	("res_blur_z", po::value<std::string>(), "Works only with the random blurring_mode, otwerwise default value is set. Resolution blurring in z direction (sigma) [mm] (default for random blurring_mode: 3.0)")
 	("res_blur_t", po::value<std::string>(), "Works only with the random blurring_mode, otwerwise default value is set. Time resolution blurring (sigma) [ns] (default for random blurring_mode: 0.1)")
 	("beta_range", po::value<std::string>(), "Approximate range of the beta+ activity in mm wrt world coordinates [mm] (default for 10^8 primary protons: 30.). For 10^8 primary protons -80. mm should be used due to phantom trasnaltion wrt the isocenter.")
-
 	("y_surface", po::value<std::string>(), "y surface coordinate parallel to the head surfaces, which indicate y coordinate where the annihilation occured. Works only for res_blur_mode == dualhead or res_blur_mode == lso.  Needed for the straightforward reconstruction [mm]. (default: 0.)")
-
-	("sfr_flag", po::value<std::string>(), "Flag for the straightforward reconstruction. Applicable only for the dualhead or lso modes (default: false; options: true or false)");
+	("sfr_flag", po::value<std::string>(), "Flag for the straightforward reconstruction. Applicable only for the dualhead or lso modes (default: false; options: true or false)")
+	("coincidences_file", po::value<std::string>(), "Name of the coincidence file (default: sensitivity_results.root)");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -87,8 +89,8 @@ int main(int argc, char *argv[])
 	SET_PRM_ENV_VAR("scanner_name", "PRM_SCANNER_NAME", "test_scanner_name");
 	SET_PRM_ENV_VAR("ps_files_no", "PRM_PS_FILES", "1");
 	SET_PRM_ENV_VAR("mode", "PRM_MODE", "9");
-	SET_PRM_ENV_VAR("e_min", "PRM_E_MIN", "0.15");
-	SET_PRM_ENV_VAR("e_max", "PRM_E_MAX", "0.4");
+	SET_PRM_ENV_VAR("e_min", "PRM_E_MIN", "0.2");
+	SET_PRM_ENV_VAR("e_max", "PRM_E_MAX", "0.38");
 	SET_PRM_ENV_VAR("edep_process", "PRM_EDEP_PROCESS", "compt");
 	SET_PRM_ENV_VAR("phantom_min", "PRM_PH_MIN", "-150.");
 	SET_PRM_ENV_VAR("phantom_max", "PRM_PH_MAX", "350.");
@@ -101,7 +103,7 @@ int main(int argc, char *argv[])
 	SET_PRM_ENV_VAR("beta_range", "PRM_BETA_RANGE", "25.");
 	SET_PRM_ENV_VAR("y_surface", "PRM_ANNIHIL_Y", "0.");
 	SET_PRM_ENV_VAR("sfr_flag", "PRM_SFR_FLAG", "false");
-
+	SET_PRM_ENV_VAR("coincidences_file", "PRM_COINC_FILE", "sensitivity_results.root");
 
 	if (!(vm.count("dir_path"))) 
 	{
@@ -147,12 +149,14 @@ int main(int argc, char *argv[])
 
 */ 
 		gROOT->Reset();
-		
 		PhaseSpace ps(dir_path, scanner_name, mode, multiple_root_files_flag);
 		PhaseSpaceOutgoing pso(dir_path, scanner_name);
 		HitsRoot hr(dir_path, scanner_name, mode);
 		Dose ds(dir_path, scanner_name, true);
 		Plot plt(scanner_name);
+		Coincidences coin(dir_path, scanner_name, mode);
+
+
 
 		if (mode == 1)
 		{
@@ -255,7 +259,6 @@ int main(int argc, char *argv[])
 		{
 			std::cout << "Mode 7" << std::endl;			
 			hr.spectra_energy_analysis();
-			hr.closeRootFile();
 		}
 
 // TODO
@@ -306,17 +309,38 @@ int main(int argc, char *argv[])
 			plt.plot_IEEE_integrated();
 		}
 
+		else if (mode == 11)
+		{
+			std::cout << "Mode 11" << std::endl;			
+			std::cout << "Count rate assessment" << std::endl;
+			hr.rate_analysis();
+		}
+
+		else if (mode == 12)
+		{
+//			std::cout << "Mode 12" << std::endl;
+//			int orsectorID2 = 18;
+//			int rsectorID2 = 12*(orsectorID2/12) + 12 - orsectorID2 + 12 * (orsectorID2/12);
+//			std::cout << "orsectorID2: " << orsectorID2 << " rsectorID2: " << rsectorID2 << std::endl;
+//			int olayerID1 = 99;
+//			int test_value = 200*(olayerID1/100) + 99 - olayerID1;			
+//			int test_value = 200*(olayerID1/100) + 99 + olayerID1;			
+//			std::cout << "olayerID: " << olayerID1 << " test_value: " << test_value << std::endl;
+			coin.extend_sensitivity_FOV();
+		}
+
 		else
 		{
 			std::cout << "Random value from gaussian (mean = 0. mm, sigma = 1e-9 * 0.23 mm): " << r->Gaus(0.,1e-9 * 0.23) << std::endl;
 			std::cout << 1e-9 * 0.23 << std::endl;
 			ds.readRAW();
 		}
-		if (mode > 0 and mode <10)
+		if (mode > 0 and mode <12)
 		{
 			ps.closeRootFile();
 			pso.closeRootFile();
 			hr.closeRootFile();
+			coin.closeRootFile();
 		}
 
 	}
