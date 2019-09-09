@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
 	modes_desciption << "10   Original and reconstructed data plots." << std::endl;
 	modes_desciption << "11   Count rate analysis." << std::endl;
 	modes_desciption << "12   Conversion the root file with coincidences to the extended FOV for sensitivity purposes." << std::endl;
+	modes_desciption << "13   Analysis of the TIMEPIX simulations" << std::endl;
 
 
 	po::options_description desc("Help to the prm(proton range monitoring) program\n\nArguments");
@@ -146,6 +147,8 @@ int main(int argc, char *argv[])
 		9	Complex analysis and plots
 		10	IEEE MIC and complex analysis plots
 		11	Dummies
+		12	
+		13	TIMEPIX analysis
 
 */ 
 		gROOT->Reset();
@@ -327,6 +330,29 @@ int main(int argc, char *argv[])
 //			int test_value = 200*(olayerID1/100) + 99 + olayerID1;			
 //			std::cout << "olayerID: " << olayerID1 << " test_value: " << test_value << std::endl;
 			coin.extend_sensitivity_FOV();
+		}
+
+		else if (mode == 13)
+		{
+			std::cout << "Mode 13 - Paulina's analysis" << std::endl;			
+			if (!multiple_root_files_flag)
+			{
+				ps.analysisTIMEPIX();
+				ps.closeRootFile();
+			}
+			else
+			{
+				for (int p = 0; p<phaseSpace_root_files; p++)
+				{
+				ps.init(p);
+				ps.analysisTIMEPIX();
+				ps.closeRootFile();
+				}					
+			}
+
+			hr.setProtons(ps.getProtons());				
+			hr.analysisTIMEPIX();
+			hr.closeRootFile();
 		}
 
 		else

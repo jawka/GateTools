@@ -26,6 +26,7 @@
 // Library
 #include "Hit.hh"
 #include "Positron.hh"
+#include "Proton.hh"
 
 class HitsRoot
 {
@@ -162,6 +163,7 @@ public:
 
 	// Vectors
 	std::vector<Positron>* positrons;
+	std::vector<Proton>* protons;
 	std::vector<Hit> coincidence_hits;
 
 	// Basic methods
@@ -178,9 +180,10 @@ public:
 	void analysis();
 	void spectra_energy_analysis();
 	void rate_analysis();
-
+	void analysisTIMEPIX();
 	// Setters
 	void setPositrons(std::vector<Positron>* vec_positrons);
+	void setProtons(std::vector<Proton>* vec_protons);
 
 
 

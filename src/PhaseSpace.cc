@@ -17,6 +17,11 @@ PhaseSpace::PhaseSpace(std::string ps_string, std::string scanner_mode, int anal
 	scanner_name = scanner_mode;
 	mode = analysis_mode;
 	std::cout << multiple_flag << std::endl;
+	if (analysis_mode == 13)
+	{
+		file_name_extension = "ps_actor_incoming_tpx.root";
+		file_name_extension_split = "ps_actor_incoming_tpx";
+	}
 	if (multiple_flag)
 		multiple_files_flag = true;
 	else if (analysis_mode != 10 && analysis_mode != 12)
@@ -43,6 +48,11 @@ std::vector<int>* PhaseSpace::getNuclei()
 std::vector<Positron>* PhaseSpace::getPositrons()
 {
 	return &positrons;
+}
+
+std::vector<Proton>* PhaseSpace::getProtons()
+{
+	return &protons;
 }
 
 
@@ -94,15 +104,13 @@ void PhaseSpace::init(int files_no)
 {
 
 	int files_number = files_no;
-	std::cout << file_name << std::endl;
+	file_name =  dir_path + file_name_extension;
 
 	if (files_number > 0)
 	{
 		file_name = dir_path + file_name_extension_split + "_" + files_number + root_ext;
 	}
 	
-	std::cout << file_name << std::endl;
-
 	f = new TFile(file_name.c_str(), "READ");
 
 	if( f->IsZombie() )
@@ -855,6 +863,38 @@ void PhaseSpace::analysisVHEEGammas()
 
 }
 
+
+
+
+
+void PhaseSpace::analysisTIMEPIX()
+{
+
+	//
+	// HISTOGRAMS INITIALIZATION IF NEEDED
+	//
+
+
+	std::cout << "Method to implment as requested by Antoni and Paulina (PhaseSpace Incoming)" << std::endl;
+/*
+	Int_t i(0);
+	Int_t nbytes(0);
+
+	while(i < entries)
+	{
+		nbytes += PhaseSpaceActor->GetEntry( i );
+
+	// CONDITION TO ADD TO THE VECTOR (I am not sure what kind of conditions you would like to apply)
+		if (!!! FILL IN THE CONDITION !!!)	
+		{
+		// Command to fill the vector with protons 
+			positrons.push_back(Proton(RunID, EventID, TrackID, ParentID, Time, X, Y, Z, dX, dY, dZ))
+		}
+		i++;
+	}
+*/
+
+}
 
 
 

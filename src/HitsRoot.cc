@@ -97,6 +97,10 @@ void HitsRoot::setPositrons(std::vector<Positron>* vec_positrons)
 	positrons = vec_positrons;
 }
 
+void HitsRoot::setProtons(std::vector<Proton>* vec_protons)
+{
+	protons = vec_protons;
+}
 
 
 int HitsRoot::hitsVectorAnalysis(std::vector<Hit> vec_hits, TH1F* annihil_gamma_energy_deposition_spectrum)
@@ -1188,6 +1192,42 @@ void HitsRoot::rate_analysis()
 
 
 }
+
+
+
+
+
+void HitsRoot::analysisTIMEPIX()
+{
+
+	//
+	// HISTOGRAMS INITIALIZATION IF NEEDED
+	//
+
+
+	std::cout << "Method to implment as requested by Antoni and Paulina (HitsRoot)" << std::endl;
+/*
+	Int_t i(0);
+	Int_t nbytes(0);
+
+	while(i < entries)
+	{
+		nbytes += PhaseSpaceActor->GetEntry( i );
+
+		// Place for yours analysis
+
+
+
+		i++;
+	}
+*/
+
+
+
+}
+
+
+
 
 
 

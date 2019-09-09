@@ -51,8 +51,12 @@ Coincidences::Coincidences(std::string dir_path, std::string scanner_mode, int a
 		}
 		new_file_name = dir_path + "extended_sensitivity_results"+file_no+".root";
 	}
-	std::cout << "New_file_name: " << new_file_name << std::endl;
-	init();
+
+	if (atoi(std::getenv("PRM_MODE")) == 12)
+	{
+		std::cout << "New_file_name: " << new_file_name << std::endl;
+		init();
+	}
 }
 
 

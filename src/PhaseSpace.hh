@@ -21,6 +21,7 @@
 // Library
 #include "Gamma.hh"
 #include "Positron.hh"
+#include "Proton.hh"
 
 class PhaseSpace
 {
@@ -75,7 +76,7 @@ public:
 	Int_t		AtomicNumber;
 	Float_t		Ekine;
 	Float_t		Weight;
-	Float_t		Time;
+	Double_t	Time;
 	Int_t		Mass;
 	Float_t		X;
 	Float_t		Y;
@@ -129,6 +130,7 @@ public:
 	std::vector<int> annihil_nuclei;
 	std::vector<Gamma> annihil_gammas;
 	std::vector<Positron> positrons;
+	std::vector<Proton> protons;
 	std::vector<std::string> radioactiveNuclei;
 
 	// ROOT variables
@@ -144,11 +146,13 @@ public:
 	void analysisPromptGammas();
 	void analysisGenericIonsAndAnnihilation();
 	void analysisVHEEGammas();
+	void analysisTIMEPIX();
 	int gammasVerification(std::vector<Gamma> gammas); //clear last elements in vectors if gammas doesn't follow the at_rest/in_fly condition
 
 	// Getters
 	std::vector<int>* getNuclei();
 	std::vector<Positron>* getPositrons();
+	std::vector<Proton>* getProtons();
 
 
 
