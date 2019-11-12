@@ -3,7 +3,9 @@
 
 PhaseSpace::PhaseSpace(std::string ps_string, std::string scanner_mode, int analysis_mode, bool multiple_flag)
 {
-
+	/*
+	Constructor
+	*/
 	temp_event = -1;
 	annihilations = 0;
 	positron_no = 0;	
@@ -24,6 +26,9 @@ PhaseSpace::PhaseSpace(std::string ps_string, std::string scanner_mode, int anal
 	}
 	if (multiple_flag)
 		multiple_files_flag = true;
+	// init method is called depending from the mode you are using 
+	// for some of the simulations phaseSpace file 
+	// is not produced so there is no need to initialize anything
 	else if (analysis_mode != 10 && analysis_mode != 12)
 		init(0);
 }
@@ -32,6 +37,9 @@ PhaseSpace::PhaseSpace(std::string ps_string, std::string scanner_mode, int anal
 
 PhaseSpace::~PhaseSpace()
 {
+	/*
+	Destructor
+	*/
 	temp_event = -1;
 	annihilations = 0;
 	positron_no = 0;
@@ -45,11 +53,13 @@ std::vector<int>* PhaseSpace::getNuclei()
 	return &annihil_nuclei;
 }
 
+//Getter for pointer to the positrons vector
 std::vector<Positron>* PhaseSpace::getPositrons()
 {
 	return &positrons;
 }
 
+//Getter for pointer to the protons vector
 std::vector<Proton>* PhaseSpace::getProtons()
 {
 	return &protons;
@@ -58,6 +68,15 @@ std::vector<Proton>* PhaseSpace::getProtons()
 
 int PhaseSpace::gammasVerification (std::vector<Gamma> gammas)
 {
+
+	/*
+	Method to verify if two gammas are from the same annihilation and have quantified energy(511 keV)
+	In Geant4 there are two options for annihilation:
+	- atRest - standard one with two gammas antiparallel
+	- inFly - interaction of the positron with electron occured when positron has 
+		non-zero kinetic energy which gives photons with energies and directions
+		calculated based on momentum and energy equlibrium 
+	*/	
 	
 	e1 = gammas[0].e_kin;
 	e2 = gammas[1].e_kin;
@@ -69,11 +88,7 @@ int PhaseSpace::gammasVerification (std::vector<Gamma> gammas)
 		if (e1 < e_high and e2 < e_high and e1 > e_low and e2 > e_low)
 		{
 			positrons.push_back(Positron(this->a_runID, gammas[0].event_id, gammas[0].parent_id, this->a_parentID, gammas[0].time, gammas[0].x, gammas[0].y, gammas[0].z, trackID_gamma1, trackID_gamma2));
-/*			std::cout << "Event_ID:" << this->a_eventID << std::endl;
-			std::cout << "EP1:" << gammas[0].x << " mm;" << gammas[0].y << " mm;" << gammas[0].z << " mm;" << std::endl;
-			std::cout << "EP2:" << gammas[1].x << " mm;" << gammas[1].y << " mm;" << gammas[1].z << " mm;" << std::endl;
-			std::cout << "AP:" << a_X << " mm;" << a_Y << " mm;" << a_Z << " mm;" << std::endl << std::endl;
-*/			this->annihilations++;
+			this->annihilations++;
 			return 1;
 		}
 		else
@@ -99,7 +114,7 @@ int PhaseSpace::gammasVerification (std::vector<Gamma> gammas)
 	}
 }
 
-// Main analysis function
+// init method
 void PhaseSpace::init(int files_no)
 {
 
@@ -177,9 +192,7 @@ void PhaseSpace::init(int files_no)
 
 
 
-	// ANALYSIS OF THE GAMMAS
-
-
+// ANALYSIS OF THE ANNIHILATION GAMMAS
 void PhaseSpace::analysisAnnihilationGammas()
 {
 
@@ -209,7 +222,7 @@ void PhaseSpace::analysisAnnihilationGammas()
 	
 	Int_t i(0);
 	Int_t nbytes(0);
-
+	// Analysis have several steps
 	while(i < entries)
 	{
 		if (i%100000000 == 0)
@@ -224,6 +237,7 @@ void PhaseSpace::analysisAnnihilationGammas()
 		}
 
 		//POSITRONS
+		// Finding the positron and storing the positron properties as trackID
 		if (positron.compare(ParticleName) == 0)	
 		{
 //			if (conv.compare(CreatorProcess) !=0 and ePairProd.compare(CreatorProcess) !=0 and RadioactiveDecay.compare(CreatorProcess) !=0)			
@@ -247,10 +261,12 @@ void PhaseSpace::analysisAnnihilationGammas()
 
 		// GAMMAS
 //		else if (PDGCode == 22)
+		// Finding the gammas and chacking if they are produced by the dtored positron
 		else if (gamma.compare(ParticleName) == 0)				
 		{
 			
 			// FIRST GAMMA
+			// first gamma is not analyzed, the second one have to be found
 			if (flag_annihil and !flag_gamma1 and annihil_process.compare(CreatorProcess) == 0 and a_trackID == ParentID)
 			{
 				
@@ -260,6 +276,7 @@ void PhaseSpace::analysisAnnihilationGammas()
 			}
 
 			// SECOND GAMMA
+			// if the second gamma is found the main analysis is performed (gammasVerification)
 			if (flag_annihil and flag_gamma1 and annihil_process.compare(CreatorProcess) == 0 and a_trackID == ParentID and TrackID != trackID_gamma1)
 			{
 				annihil_gammas.push_back(Gamma(RunID, EventID, TrackID, ParentID, Time, Ekine, EmissionPointX, EmissionPointY, EmissionPointZ));
@@ -302,7 +319,7 @@ void PhaseSpace::analysisAnnihilationGammas()
 	
 	fw.Print();
 	fw.Close();
-
+	// mode 9 is for the 2018 IEEE MIC conference (Sydney, Melbourne) conference 
 	if (mode == 9)
 	{
 		f_name = "/home/baran/Desktop/root_IEEE_MIC_"+scanner_name+".root";
@@ -331,15 +348,12 @@ void PhaseSpace::analysisAnnihilationGammas()
 
 
 
-	// ANALYSIS FOR THE PROMPT GAMMAS
-
+// ANALYSIS OF THE PROMPT GAMMAS
 void PhaseSpace::analysisPromptGammas()
 {
 
 
-	//
-	// MAIN ANALYSIS (LOOP)
-	//			
+	//Histogram initialization
 	TH1F *prod_time_curve = new TH1F( "Production time of prompt gammas", "Production time of prompt gammas", 1200, 0, 12);
 	prod_time_curve->GetXaxis()->SetTitle("Time [ns] - 0.01 nanoseconds intervals");
 	prod_time_curve->GetYaxis()->SetTitle("Number of prompt gammas");
@@ -351,6 +365,7 @@ void PhaseSpace::analysisPromptGammas()
 	Int_t j(0);
 	Int_t bytes(0);
 
+	// MAIN ANALYSIS (LOOP)
 	while(j < entries)
 	{
 		if (j%10000000 == 0)
@@ -404,13 +419,16 @@ void PhaseSpace::analysisPromptGammas()
 
 
 
-	// ANALYSIS OF THE GAMMAS
 void PhaseSpace::analysisGenericIonsAndAnnihilation()
 {
 
-	//
+	/*
+
+	The method creates profiles of the positrons with the distinguishment between different nuclei.  
+	Additionally the time histogram of the produced positrons is created.
+	*/
+
 	// HISTOGRAMS INITIALIZATION
-	//
 
 	positron_no = 0;
 
@@ -527,9 +545,7 @@ void PhaseSpace::analysisGenericIonsAndAnnihilation()
 	zAll->GetYaxis()->SetTitle("Number of produced positrons (e+)");
 
 
-	//
 	// MAIN ANALYSIS (LOOP)
-	//			
 	
 	Int_t i(0);
 	Int_t nbytes(0);
@@ -706,13 +722,10 @@ void PhaseSpace::analysisGenericIonsAndAnnihilation()
 
 
 
-	// ANALYSIS FOR THE VHEE GAMMAS
+// ANALYSIS FOR THE Very High Eenergy Electrons (VHEE) - annihilation analysis
 void PhaseSpace::analysisVHEEGammas()
 {
-	//
 	// HISTOGRAMS INITIALIZATION
-	//
-
 
 	TH2F *xy = new TH2F( "xy", "XY histogram", 100, -50.0, 50.0, 100, -50.0, 50.0);
 	xy->GetXaxis()->SetTitle("X [mm]");
@@ -742,9 +755,7 @@ void PhaseSpace::analysisVHEEGammas()
 	annihil_gamma_prod_time->GetXaxis()->SetTitle("Time [ns]");
 	annihil_gamma_prod_time->GetYaxis()->SetTitle("Number of annihilation gammas");
 
-	//
 	// MAIN ANALYSIS (LOOP)
-	//			
 	
 	Int_t i(0);
 	Int_t nbytes(0);
@@ -822,7 +833,7 @@ void PhaseSpace::analysisVHEEGammas()
 	std::cout << "Number of positrons produced by Decay: " << positrons_Decay << " - " << (float) 100*(float)positrons_Decay/(float)positron_no << "%" << " of all produced positrons" << std::endl;
 	std::cout << "--------END--------" << std::endl;
 
-	// FIRST FILE FOR GAMMAS ANALYSIS
+	// FIRST FILE FOR POSITRONS ANALYSIS
 
 	std::string f_name = "/home/baran/Desktop/root_phaseSpace_"+scanner_name+"_VHEE_all_positrons.root";
 	TFile fw(f_name.c_str(),"RECREATE");
@@ -870,9 +881,7 @@ void PhaseSpace::analysisVHEEGammas()
 void PhaseSpace::analysisTIMEPIX()
 {
 
-	//
 	// HISTOGRAMS INITIALIZATION IF NEEDED
-	//
 
 
 	std::cout << "Method to implment as requested by Antoni and Paulina (PhaseSpace Incoming)" << std::endl;
@@ -887,7 +896,7 @@ void PhaseSpace::analysisTIMEPIX()
 	// CONDITION TO ADD TO THE VECTOR (I am not sure what kind of conditions you would like to apply)
 		if (!!! FILL IN THE CONDITION !!!)	
 		{
-		// Command to fill the vector with protons 
+		// Example command to fill the vector with protons 
 			positrons.push_back(Proton(RunID, EventID, TrackID, ParentID, Time, X, Y, Z, dX, dY, dZ))
 		}
 		i++;

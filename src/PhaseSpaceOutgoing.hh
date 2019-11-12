@@ -140,8 +140,6 @@ public:
 	void gammasTimeAnalysisVHEE();
 	void outgoing_spectra_energy_analysis();
 
-	// Getters
-
 
 
 };

@@ -3,6 +3,10 @@
 
 Dose::Dose(std::string dose_string, std::string scanner_mode, bool dose_flag)
 {
+	/*
+		Constructor
+	*/
+
 	dir_path = dose_string;
 	scanner_name = scanner_mode;
 	if (!dose_flag)
@@ -11,6 +15,9 @@ Dose::Dose(std::string dose_string, std::string scanner_mode, bool dose_flag)
 
 Dose::~Dose()
 {
+	/*
+		Destructor
+	*/
 	dose = true;
 }
 
@@ -18,16 +25,22 @@ Dose::~Dose()
 
 void Dose::readRAW ()
 {
+	/*
+	Read the dose from the text file and save the dose z profile to the root file
+	*/
+
 	// Read voxels stream
 	std::string f_name = dir_path + file_name_extension + dose + raw_ext;
 	std::ifstream file (f_name.c_str(), std::ios::in|std::ios::binary);
 	if (!file.is_open())
     		std::cerr<<"error while opening file"<<std::endl;
     
+	// Set the input file
 	std::ofstream txt_output;
 	std::string txt_file = "/home/baran/Desktop/root_IEEE_MIC_"+scanner_name+"_dose.txt";
 	txt_output.open (txt_file);
 
+	// Create the 1D histogram
 	TH1F *z_dose = new TH1F( "Dose profile", "Dose profile", (atoi(std::getenv("PRM_PH_BINS"))), (atof(std::getenv("PRM_PH_MIN"))), (atof(std::getenv("PRM_PH_MAX"))));
 	z_dose->GetXaxis()->SetTitle("Z [mm]");
 	z_dose->GetYaxis()->SetTitle("Dose [Gy]");
@@ -36,6 +49,7 @@ void Dose::readRAW ()
 	float sum_slice = 0.;
 	int sum_voxels = 4000000;	
 	int slice_number = 26;
+	//loop over all voxels
 	for (int i=1; i<=sum_voxels; i++)
 	{
 		file.read((char*)&f, sizeof(float));
@@ -51,7 +65,7 @@ void Dose::readRAW ()
 	}
 	
 	file.close();
-
+	// Create, open and save new root file
 	std::string root_f_name = "/home/baran/Desktop/root_IEEE_MIC_"+scanner_name+".root";
 	TFile fw(root_f_name.c_str(),"UPDATE");
 

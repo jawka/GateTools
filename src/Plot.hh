@@ -44,6 +44,10 @@
 class Plot
 {
 
+	/*
+	Class dedicated to produce the plots for the IEEE MIC 2018 (Sydney, Australia) conference
+	*/
+
 public:
 
 	// Constructor and destructor
@@ -58,17 +62,6 @@ public:
 	std::string complex_analysis_file = "root_complex_analysis_";
 	std::string root_ext = ".root";
 	std::string scanner_mode;
-
-	// Counters
-//	Int_t lines_counter;
-
-	// Processess' strings
-//	std::string DimSize = "DimSize";
-
-	// Vectors
-//	std::vector<int> dim_size;
-//	std::vector<float> voxels_stream;
-
 
 
 	// Basic methods

@@ -4,6 +4,7 @@
 PhaseSpaceOutgoing::PhaseSpaceOutgoing(std::string pso_string, std::string scanner_mode)
 {
 
+	//Destructor
 	temp_event = -1;
 	annihilations = 0;
 	positron_no = 0;
@@ -11,6 +12,9 @@ PhaseSpaceOutgoing::PhaseSpaceOutgoing(std::string pso_string, std::string scann
 	annihil_gammas_no = 0;
 	file_name = pso_string + file_name_extension;
 	scanner_name = scanner_mode;
+	// init method is called depending from the mode you are using 
+	// for some of the simulations phaseSpace file with the outgoing particles
+	// is not produced so there is no need to initialize anything
 	if (atoi(std::getenv("PRM_MODE")) != 10 && atoi(std::getenv("PRM_MODE")) != 12 && atoi(std::getenv("PRM_MODE")) != 13)
 		init();
 
@@ -20,6 +24,7 @@ PhaseSpaceOutgoing::PhaseSpaceOutgoing(std::string pso_string, std::string scann
 
 PhaseSpaceOutgoing::~PhaseSpaceOutgoing()
 {
+	// Destructor
 	temp_event = -1;
 	annihilations = 0;
 	positron_no = 0;
@@ -28,15 +33,15 @@ PhaseSpaceOutgoing::~PhaseSpaceOutgoing()
 
 
 
-
-
-
-
-
 // Main analysis function
 void PhaseSpaceOutgoing::init()
-{
+{e mode 
 
+	/*
+
+	Initialization method
+
+	*/
 	f = new TFile(file_name.c_str(), "READ");
 
 	if( f->IsZombie() )
@@ -93,7 +98,7 @@ void PhaseSpaceOutgoing::init()
 
 
 
-	// ANALYSIS OF THE PROMPT GAMMAS
+// ANALYSIS OF THE PROMPT GAMMAS
 void PhaseSpaceOutgoing::analysisPromptGammas()
 {
 	//
@@ -107,9 +112,6 @@ void PhaseSpaceOutgoing::analysisPromptGammas()
 	z->GetXaxis()->SetTitle("Z [mm]");
 	z->GetYaxis()->SetTitle("Number of particles");
 
-	//
-	// MAIN ANALYSIS (LOOP)
-	//			
 	TH1F *prod_time_curve = new TH1F( "prod_time", "Prompt gamma leaving phantom time", 1200, 0, 12);
 	prod_time_curve->GetXaxis()->SetTitle("Time [ns] - 0.01 nanoseconds intervals");
 	prod_time_curve->GetYaxis()->SetTitle("Number of prompt gammas");
@@ -121,6 +123,10 @@ void PhaseSpaceOutgoing::analysisPromptGammas()
 	Int_t i(0);
 	Int_t nbytes(0);
 
+	//
+	// MAIN ANALYSIS (LOOP)
+	//			
+
 	while(i < entries)
 	{
 		if (i%10000000 == 0)
@@ -130,7 +136,7 @@ void PhaseSpaceOutgoing::analysisPromptGammas()
 
 		//GAMMAS
 		if (gamma.compare(ParticleName) == 0)
-//		if (PDGCode == 22)	
+//		if (PDGCode == 22)	// needed if PDG flag on
 		{			
 			if (Ekine < 10. and Ekine > 1. and protonInelastic.compare(CreatorProcess) != 0)
 			{
@@ -171,12 +177,12 @@ void PhaseSpaceOutgoing::analysisPromptGammas()
 
 
 
-	// ANALYSIS OF THE VHEE
+// ANALYSIS OF THE Very High Energy Electrons (VHEE for Karolina Kokurewicz)
 void PhaseSpaceOutgoing::analysisVHEEGammas()
 {
 	
 	//
-	// MAIN ANALYSIS (LOOP)
+	// Histogram initialization
 	//
 			
 	TH1F *gamma_energy = new TH1F( "Gamma energy", "Gamma energy", 200, 0, 5);
@@ -197,6 +203,8 @@ void PhaseSpaceOutgoing::analysisVHEEGammas()
 
 	Int_t i(0);
 	Int_t nbytes(0);
+
+	// Main analysis
 
 	while(i < entries)
 	{
@@ -251,10 +259,11 @@ void PhaseSpaceOutgoing::analysisVHEEGammas()
 
 
 
-// TODO: Perform the full analysis of the outgoing particles
+// Perform the full analysis of the outgoing particles
 void PhaseSpaceOutgoing::complexAnalysisVHEEGammas()
 {
-	// MAIN ANALYSIS (LOOP)
+
+	//Histogram initialization
 			
 	TH1F *gamma_energy = new TH1F( "Gamma energy", "Gamma energy", 200, 0, 20);
 	gamma_energy->GetXaxis()->SetTitle("Energy [MeV]");
@@ -297,6 +306,8 @@ void PhaseSpaceOutgoing::complexAnalysisVHEEGammas()
 
 	Float_t phantom_boundary_min (atof(std::getenv("PRM_PH_MIN")));
 	Float_t phantom_boundary_max (atof(std::getenv("PRM_PH_MAX")));
+
+	// MAIN ANALYSIS (LOOP)
 
 	while(i < entries)
 	{
@@ -383,13 +394,11 @@ void PhaseSpaceOutgoing::complexAnalysisVHEEGammas()
 
 
 
-
+// Time analysis of the gammas outgoing from the VHEE 
 void PhaseSpaceOutgoing::gammasTimeAnalysisVHEE()
 {
-	
-	//
-	// MAIN ANALYSIS (LOOP)
-	//
+
+	// Histogram initialization
 			
 	TH1F *gamma_prod_time = new TH1F( "Gammas production time from the incident electron production", "Gammas production time from the incident electron production", 7000, 3, 10);
 	gamma_prod_time->GetXaxis()->SetTitle("Time [ns]");
@@ -417,6 +426,8 @@ void PhaseSpaceOutgoing::gammasTimeAnalysisVHEE()
 
 	Int_t i(0);
 	Int_t nbytes(0);
+
+	// MAIN ANALYSIS (LOOP)
 
 	while(i < entries)
 	{
@@ -485,13 +496,11 @@ void PhaseSpaceOutgoing::gammasTimeAnalysisVHEE()
 
 
 
-
+// Energy spectra analysis of the outgoing particles
 void PhaseSpaceOutgoing::outgoing_spectra_energy_analysis()
 {
 
-	//
-	// MAIN ANALYSIS (LOOP)
-	//
+	// Histogram initialization
 			
 	TH1F *gamma_energy = new TH1F( "Gamma energy", "Gamma energy", 4000, 0, 40);
 	gamma_energy->GetXaxis()->SetTitle("Energy [MeV]");
@@ -538,6 +547,7 @@ void PhaseSpaceOutgoing::outgoing_spectra_energy_analysis()
 	std::cout << "Neutrons number: " << n_neutron << std::endl;
 	std::cout << "--------END--------" << std::endl;
 
+	// MAIN ANALYSIS (LOOP)
 	while(i < entries)
 	{
 		if (i%10000000 == 0)
@@ -629,7 +639,7 @@ void PhaseSpaceOutgoing::outgoing_spectra_energy_analysis()
 
 
 
-
+// Method to close root file
 void PhaseSpaceOutgoing::closeRootFile()
 {
 	f->Close();

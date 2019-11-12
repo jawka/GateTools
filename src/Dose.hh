@@ -44,17 +44,13 @@ public:
 	// Counters
 	Int_t lines_counter;
 
-	// Processess' strings
-//	std::string DimSize = "DimSize";
 	
 	// Vectors
 	std::vector<int> dim_size;
 	std::vector<float> voxels_stream;
-
 	
 
-	// Basic methods
-//	void readMHD();
+	// Methods
 	void readRAW();
 
 

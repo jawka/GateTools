@@ -3,6 +3,11 @@
 
 HitsRoot::HitsRoot(std::string ro_string, std::string scanner_mode, int analysis_mode)
 {
+
+	/*
+	Constructor
+	*/
+
 	entries = 0;
 	iterr = 0;
 	none = 0;
@@ -13,6 +18,8 @@ HitsRoot::HitsRoot(std::string ro_string, std::string scanner_mode, int analysis
 	scanner_name = scanner_mode;
 	sfr_y = atof(std::getenv("PRM_ANNIHIL_Y"));
 	res_mode = std::getenv("PRM_RES_MODE");
+
+	// Blurring setup
 
 	if (!res_mode.compare("barrel"))
 	{
@@ -28,7 +35,7 @@ HitsRoot::HitsRoot(std::string ro_string, std::string scanner_mode, int analysis
 		sigma_blurring_x = 1.07; //in mm
 		sigma_blurring_y = 1.07; //in mm
 		sigma_blurring_z = 1.07; //in mm
-		sigma_blurring_t = 0.0; //in ns #TODO
+		sigma_blurring_t = 0.0; //in ns 
 	}
 	else if (!res_mode.compare("dualhead"))
 	{
@@ -48,6 +55,9 @@ HitsRoot::HitsRoot(std::string ro_string, std::string scanner_mode, int analysis
 		std::cout << "Blurring:" << std::endl << "x:" << sigma_blurring_x << std::endl << "y:" << sigma_blurring_y << std::endl << "z:" << sigma_blurring_z << std::endl;
 	}
 	
+	// init method is called depending from the mode you are using 
+	// for some of the simulations detector output with the deposition characteristic
+	// is not produced so there is no need to initialize anything
 	if (atoi(std::getenv("PRM_MODE")) != 10 && atoi(std::getenv("PRM_MODE")) != 12)
 	{
 		init();
@@ -58,6 +68,8 @@ HitsRoot::HitsRoot(std::string ro_string, std::string scanner_mode, int analysis
 
 HitsRoot::~HitsRoot()
 {
+
+	//Destructor
 	Reset();
 }
 
@@ -74,7 +86,7 @@ void HitsRoot::Reset()
 
 
 
-// Setting up the temp values of annihilation properties from
+// Setting up the temp values of annihilation properties from the vector
 void HitsRoot::setTempElements()
 {
 	a_runID = positrons->front().run_id;
@@ -97,15 +109,21 @@ void HitsRoot::setPositrons(std::vector<Positron>* vec_positrons)
 	positrons = vec_positrons;
 }
 
+//Setter for pointer to the protons vector
 void HitsRoot::setProtons(std::vector<Proton>* vec_protons)
 {
 	protons = vec_protons;
 }
 
-
 int HitsRoot::hitsVectorAnalysis(std::vector<Hit> vec_hits, TH1F* annihil_gamma_energy_deposition_spectrum)
 {
-	//CODE FOR THE ANALYSIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	/*
+
+	Method for the analysis of the hits stored in vector in order to determine the deposition energy within the plastic 
+
+	*/
+
 	temp_trackID = vec_hits.front().track_id;
 	Float_t e1 = 0.;
 	Float_t e2 = 0.;
@@ -140,14 +158,16 @@ int HitsRoot::hitsVectorAnalysis(std::vector<Hit> vec_hits, TH1F* annihil_gamma_
 
 float HitsRoot::z_straightforward_recon(std::vector<Hit> vec_hits)
 {
+	/*
 
-	//CODE FOR THE ANALYSIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	Code to reconstruct the z position according to the paper from AC Krann 2018 (Valeria Rosso group)
+
+	*/
+
 	temp_trackID = vec_hits.front().track_id;
-//	bool flag_first = true;
-//	bool flag_second = true;
-//	std::cout << "parentID (positron track_ID): " << a_trackID << "; trackID_1: " << a_trackID_gamma1 << "; trackID_2: " <<  a_trackID_gamma2 << std::endl;
 	coincidence_hits.clear();
 	compton_no = 1;
+	// Searching the points of the deposition, neglecting multiple scattering
 	if (vec_hits.size() == 2)
 		coincidence_hits = vec_hits;
 	else
@@ -212,11 +232,14 @@ float HitsRoot::z_straightforward_recon(std::vector<Hit> vec_hits)
 
 float HitsRoot::z_range_estimation(std::vector<Hit> vec_hits)
 {
-	//CODE FOR THE ANALYSIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	/*
+
+	Code to naive reconstruction of the annihilation point with additional blurrring effect
+	added on top of the deposition point
+
+	*/
+
 	temp_trackID = vec_hits.front().track_id;
-//	bool flag_first = true;
-//	bool flag_second = true;
-//	std::cout << "parentID (positron track_ID): " << a_trackID << "; trackID_1: " << a_trackID_gamma1 << "; trackID_2: " <<  a_trackID_gamma2 << std::endl;
 	coincidence_hits.clear();
 	compton_no = 1;
 	if (vec_hits.size() == 2)
@@ -326,7 +349,7 @@ float HitsRoot::z_range_estimation(std::vector<Hit> vec_hits)
 
 
 
-	// ANNIHILATION POINT CALCULATION - BASED ON ANTONI'S IDEA
+	// ANNIHILATION POINT CALCULATION - BASED ON ANTONI'S IDEA (NOT A GOOD IDEA TO BE HONEST)
 	x_prim = (x1+x2)/2;
 	y_prim = (y1+y2)/2;
 	z_prim = (z1+z2)/2;
@@ -356,10 +379,15 @@ float HitsRoot::z_range_estimation(std::vector<Hit> vec_hits)
 
 bool HitsRoot::scatteringFlag (std::vector<Hit> vec_hits)
 {
+	/*
+
+	Checking if any Compton or Rayleigh scattering occurs in the phantom
+	
+	*/
 	
 	for (Int_t j=0; j<vec_hits.size(); j++)
 	{			
-		if (vec_hits.at(j).nPhantomCompton !=0 || vec_hits.at(j).nPhantomRayleigh !=0 || vec_hits.at(j).nPhantomCompton !=0 || vec_hits.at(j).nPhantomRayleigh !=0)
+		if (vec_hits.at(j).nPhantomCompton !=0 || vec_hits.at(j).nPhantomRayleigh !=0)
 		{
 //			std::cout << "Compton no.: " << vec_hits.at(j).nPhantomCompton << "; Rayleigh no.: " << vec_hits.at(j).nPhantomRayleigh << std::endl << std::endl;
 			return true;
@@ -442,6 +470,20 @@ void HitsRoot::init()
 
 void HitsRoot::analysis()
 {
+
+	/*
+
+	Code for the fully analysis of the data in the Hits tree
+	Looking for the annihilation gammas from the same event and 
+	naive reconstruction of the annihilation point with additional 
+	blurring effect. 
+	Additional information about the annihilation events which doesn't give 
+	any or just one Compton scatters is stored.
+
+	*/
+
+
+
 	std::string crystal_proc = std::getenv("PRM_EDEP_PROCESS");
 
 	//
@@ -585,10 +627,10 @@ void HitsRoot::analysis()
 	Float_t eth_min = atof(std::getenv("PRM_E_MIN"));
 	Float_t eth_max = atof(std::getenv("PRM_E_MAX"));
 
-	// LOOP ACROOS ALL ENTRIES
 	std::cout << "Number of entries: " << entries << std::endl;
 	Int_t nbytes(0);
 	
+	// LOOP ACROOS ALL ENTRIES
 	while (iterr < entries)
 	{
 		if (iterr%1000000 == 0)
@@ -597,12 +639,14 @@ void HitsRoot::analysis()
 		nbytes += HitsChain->GetEntry(iterr);
 
 		
+		// Checking the events IDs
 		if (eventID > a_eventID && !positrons->empty())
 		{
 			
 			if (!hitss.empty())
 			{				
 								
+				// One Compton scattering option
 				if (hitss.size() == 1)
 				{
 					z_one_compton->Fill(a_Z);
@@ -613,8 +657,10 @@ void HitsRoot::analysis()
 					continue;
 				}
 
+				// More than one compton scattering is registered
 				else
 				{
+					// Checking of the Compton scatterings' number
 					compt_number = this->hitsVectorAnalysis(hitss, annihil_gamma_energy_deposition_spectrum);
 					if (compt_number == 1)
 					{
@@ -630,6 +676,7 @@ void HitsRoot::analysis()
 						z_smoothed = this->z_range_estimation(hitss);
 						if (sfr_flag)
 							z_sfr = this->z_straightforward_recon(hitss);
+						// In-beam phase
 						if (a_time < time_slice)
 						{
 							inbeam_time_two_compton->Fill(a_time/1000000.);
@@ -650,6 +697,7 @@ void HitsRoot::analysis()
 							}
 //							z_profile_inbeam->Fill(z_smoothed);						
 						}	
+						// In-room phase
 						else if (a_time < 300000000000.)
 						{
 							interspill_time_two_compton->Fill(a_time/1000000000.);
@@ -680,6 +728,7 @@ void HitsRoot::analysis()
 							}
 //							z_profile_interspill->Fill(z_smoothed);						
 						}
+						// Off-beam phase
 						else
 						{
 							scatter_flag = scatteringFlag (hitss);
@@ -711,6 +760,7 @@ void HitsRoot::analysis()
 			}
 
 			else 
+			// No Compton scattering cases
 			{
 				time_none_compton->Fill(a_time/1000000000.);
 				z_none_compton->Fill(a_Z);
@@ -942,6 +992,13 @@ void HitsRoot::analysis()
 void HitsRoot::spectra_energy_analysis()
 {
 		
+	/*
+	
+	Code to produce the deposited energy spectrum for each particle types 
+	
+	*/
+
+
 	TH1F *gamma_energy = new TH1F( "Gamma deposited energy", "Gamma energy", 500, 0, 0.5);
 	gamma_energy->GetXaxis()->SetTitle("Energy [MeV]");
 	gamma_energy->GetYaxis()->SetTitle("Number of gammas");
@@ -1091,6 +1148,12 @@ void HitsRoot::spectra_energy_analysis()
 void HitsRoot::rate_analysis()
 {
 		
+	/*
+
+	Code to assess the incoming particles rate in JPET detector investigations
+
+	*/
+
 	TH1F *energy_deposition = new TH1F( "Deposited energy", "Deposited energy", 5000, 0, 5.);
 	energy_deposition->GetXaxis()->SetTitle("Energy [MeV]");
 	energy_deposition->GetYaxis()->SetTitle("Number of particles");
@@ -1212,7 +1275,7 @@ void HitsRoot::analysisTIMEPIX()
 
 	while(i < entries)
 	{
-		nbytes += PhaseSpaceActor->GetEntry( i );
+		nbytes += HitsChain->GetEntry( i );
 
 		// Place for yours analysis
 

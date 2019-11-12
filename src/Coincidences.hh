@@ -152,9 +152,6 @@ public:
 
 	// Analysis methods
 	void extend_sensitivity_FOV();
-	//void split inbem_offbem();
-	//float smooth_across_plastic();
-
 
 };
 #endif // COINCIDENCES_HH

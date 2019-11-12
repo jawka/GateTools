@@ -33,21 +33,14 @@ void Plot::plot_complex_profile_analysis ()
 
 	//DOSE PROFILE
 	std::string sdose = "Dose profile";
-//	root_file->cd("z");
-//	root_file->cd("Registered annihilations in coincidence - interspill");
-//	root_file->cd("Registered annihilations in coincidence - integrated over time");
 	std::string registered_over_time = "Registered annihilations in coincidence - integrated over time";
-//	root_file->cd("Original place of gammas annihilation - interspill phase");
 	std::string original_over_time = "Original place of gammas annihilation - integrated over time";
-//	root_file->cd("Delta z - interspill");
-//	root_file->cd("Delta z - integrated over time");
 
 	c1->cd(1);
 
 	gStyle->SetOptStat(kFALSE);
 	gPad->SetGridx();
 	gPad->SetGridy();
-//	gStyle->SetFrameFillColor(15);
 
 	TH1F *registered_integrated = (TH1F*)root_file->Get(registered_over_time.c_str());
 
@@ -60,9 +53,6 @@ void Plot::plot_complex_profile_analysis ()
 	registered_integrated->GetXaxis()->SetTitle("Phantom depth [mm]");	
 	registered_integrated->GetXaxis()->SetLabelFont(62);
 	registered_integrated->GetXaxis()->SetTitleFont(62);
-
-//	registered_integrated->Scale(0.5);
-
 	registered_integrated->SetLineWidth(1);
 	registered_integrated->Draw();
 	
@@ -75,7 +65,6 @@ void Plot::plot_complex_profile_analysis ()
 
 	original_integrated->SetLineWidth(1);
 	original_integrated->SetLineColor(kRed);
-//	original_integrated->Scale(0.5);
 	original_integrated->Draw("same");
 
 
@@ -93,9 +82,6 @@ void Plot::plot_complex_profile_analysis ()
 
 	dose->Scale(scale);
 	dose->Draw("same hist");
-	
-	//c1->SetFillColor(5);
-	//gPad->SetFillColor(43);
 
 	c1->Update();
 
@@ -109,33 +95,19 @@ void Plot::plot_complex_profile_analysis ()
 	c1->Update();
 
 
-
-
 	// FITTING
-
 	TF1 *fit_proximal_recon = new TF1("proximal_recon","[0]*TMath::Erf((x-[1])/[2])+[3]", atof(std::getenv("PRM_PH_MIN")) + 25., atof(std::getenv("PRM_PH_MIN")) + 65.); 
 	fit_proximal_recon->SetParameters(150., -100, 8., 150);
-//	fit_proximal_recon->SetParLimits(0, parlimitslo[i], parlimitshi[i]);
 	
 	TF1 *fit_distal_recon = new TF1("distal_recon","[0]*TMath::Erf((x-[1])/[2])+[3]", atof(std::getenv("PRM_BETA_RANGE")) - 10., atof(std::getenv("PRM_BETA_RANGE")) + 40.); 
 	fit_distal_recon->SetParameters(-150, 30, 4., 150);
 	std::cout << "Max of the reconstructed z profile histogram: " << registered_integrated->GetMaximum() << std::endl;
-//	fit_distal_recon->SetParLimits(0, 0.9*registered_integrated->GetMaximum(), 1.1*registered_integrated->GetMaximum());
 
 	TF1 *fit_distal_mc = new TF1("distal_mc","[0]*TMath::Erf((x-[1])/[2])+[3]", atof(std::getenv("PRM_BETA_RANGE")) - 5., atof(std::getenv("PRM_BETA_RANGE")) + 40.); 
 	fit_distal_mc->SetParameters(-300, 30, 4., 300);
 	std::cout << "Max of the original (MC) z profile histogram: " << original_integrated->GetMaximum() << std::endl;
-//	fit_distal_mc->SetParLimits(0, 0.9*original_integrated->GetMaximum(), 1.1*original_integrated->GetMaximum());
 
-/*	TF1 *fit_proximal_recon = new TF1("proximal_recon","([0]/(1+ TMath::Exp(-[1]*(x-[2]))))", atof(std::getenv("PRM_PH_MIN")) + 20., atof(std::getenv("PRM_PH_MIN")) + 70.); 
-	fit_proximal_recon->SetParameters(300., 1., (atof(std::getenv("PRM_PH_MIN")) + 50.));
 
-	TF1 *fit_distal_recon = new TF1("distal_recon","([0]/(1+ TMath::Exp(-[1]*(x-[2]))))", atof(std::getenv("PRM_BETA_RANGE")) - 15., atof(std::getenv("PRM_BETA_RANGE")) + 40.); 
-	fit_distal_recon->SetParameters(-500., 1., atof(std::getenv("PRM_BETA_RANGE")));
-
-	TF1 *fit_distal_mc = new TF1("distal_mc","([0]/(1+ TMath::Exp(-[1]*(x-[2]))))", atof(std::getenv("PRM_BETA_RANGE")) - 3., atof(std::getenv("PRM_BETA_RANGE")) + 40.); 
-	fit_distal_mc->SetParameters(-600., 1., atof(std::getenv("PRM_BETA_RANGE")));
-*/
 	fit_proximal_recon->SetLineColor(5);
 	fit_proximal_recon->SetLineWidth(2);
 	fit_proximal_recon->SetLineStyle(1);
@@ -179,10 +151,7 @@ void Plot::plot_complex_profile_analysis ()
 	legend->AddEntry(registered_integrated,"Pseudo-reconstructed annihilation point profile","lp");
 	legend->AddEntry(original_integrated,"Original annihilation point profile","lp");
 	legend->AddEntry(dose,"Dose","lp");
-/*	legend->AddEntry(fit_proximal_recon,"Sigmoid fit to the pseudo-reconstructed data - PROXIMAL fall-off","lp");
-	legend->AddEntry(fit_distal_recon,"Sigmoid fit to the pseudo-reconstructed data - DISTAL fall-off","lp");
-	legend->AddEntry(fit_distal_mc,"Sigmoid fit to the original MC data - DISTAL fall-off","lp");
-*/	legend->AddEntry(fit_distal_mc,"Erf fit to the original MC data - DISTAL fall-off","lp");
+	legend->AddEntry(fit_distal_mc,"Erf fit to the original MC data - DISTAL fall-off","lp");
 	legend->AddEntry(fit_proximal_recon,"Erf fit to the pseudo-reconstructed data - PROXIMAL fall-off","lp");
 	legend->AddEntry(fit_distal_recon,"Erf fit to the pseudo-reconstructed data - DISTAL fall-off","lp");
 	legend->AddEntry((TObject*)0, original_dw50.str().c_str(), "");
@@ -225,22 +194,13 @@ void Plot::plot_IEEE_integrated ()
 
 	//DOSE PROFILE
 	std::string sdose = "Dose profile";
-//	root_file->cd("z");
-//	root_file->cd("Registered annihilations in coincidence - interspill");
-//	root_file->cd("Registered annihilations in coincidence - integrated over time");
-//	std::string registered_over_time = "Registered annihilations in coincidence - integrated over time";
-//	root_file->cd("Original place of gammas annihilation - interspill phase");
 	std::string original_over_time = "Original place of gammas annihilation - integrated over time";
-//	std::string original_interspill = "Original place of gammas annihilation - interspill phase";
-//	root_file->cd("Delta z - interspill");
-//	root_file->cd("Delta z - integrated over time");
 
 	c1->cd(1);
 
 	gStyle->SetOptStat(kFALSE);
 	gPad->SetGridx();
 	gPad->SetGridy();
-//	gStyle->SetFrameFillColor(15);
 
 	TH1F *original_over_time_h = (TH1F*)root_file->Get(original_over_time.c_str());
 
@@ -252,7 +212,6 @@ void Plot::plot_IEEE_integrated ()
 	original_over_time_h->GetYaxis()->SetTitleFont(62);
 	original_over_time_h->GetYaxis()->SetLabelSize(0.05);
 	original_over_time_h->GetYaxis()->SetTitleSize(0.05);
-//	original_over_time_h->GetYaxis()->SetRangeUser(0, 2*original_over_time_h->GetMaximum());
 	original_over_time_h->GetYaxis()->SetRangeUser(0, 400);
 	original_over_time_h->GetYaxis()->SetNdivisions(205);
 
@@ -275,8 +234,6 @@ void Plot::plot_IEEE_integrated ()
 
 	TH1F *dose = (TH1F*)root_file->Get(sdose.c_str());
 
-//	Float_t rightmax = 1.1*dose->GetMaximum();
-//	Float_t scale = gPad->GetUymax()/rightmax;
 	Float_t rightmax = 1.1;
 	Float_t scale = gPad->GetUymax()/(1.1*dose->GetMaximum());
 
@@ -289,9 +246,6 @@ void Plot::plot_IEEE_integrated ()
 	dose->Scale(scale);
 	dose->Draw("same hist");
 	
-	//c1->SetFillColor(5);
-	//gPad->SetFillColor(43);
-
 	c1->Update();
 
 	TGaxis *axis = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(), gPad->GetUxmax(), gPad->GetUymax(), 0, rightmax, 510, "+L");
@@ -316,11 +270,8 @@ void Plot::plot_IEEE_integrated ()
 	
 	TLegend *legend = new TLegend(0.15, 0.65, 0.5, 0.85);
 	legend->SetTextSize(0.04);
-//	legend->SetFillColor(0);
 	legend->AddEntry(original_over_time_h,"Annihilation point","lp");
 	legend->AddEntry(dose,"Dose","lp");
-//	legend->AddEntry((TObject*)0, all_coincidences.str().c_str(), "");
-//	legend->AddEntry((TObject*)0, plastic_coincidences.str().c_str(), "");
 	legend->Draw();
 
 	c1->Update();
@@ -358,25 +309,15 @@ void Plot::plot_IEEE_interspill ()
 
 	//DOSE PROFILE
 	std::string sdose = "Dose profile";
-//	root_file->cd("z");
-//	root_file->cd("Registered annihilations in coincidence - interspill");
-//	root_file->cd("Registered annihilations in coincidence - integrated over time");
-//	std::string registered_over_time = "Registered annihilations in coincidence - integrated over time";
-//	root_file->cd("Original place of gammas annihilation - interspill phase");
-//	std::string original_over_time = "Original place of gammas annihilation - integrated over time";
 	std::string original_interspill = "Original place of gammas annihilation - interspill phase";
-//	root_file->cd("Delta z - interspill");
-//	root_file->cd("Delta z - integrated over time");
 
 	c1->cd(1);
 
 	gPad->SetGridx();
 	gPad->SetGridy();
-//	gStyle->SetFrameFillColor(15);
 
 	TH1F *original_interspill_h = (TH1F*)root_file->Get(original_interspill.c_str());
 
-//	original_interspill_h->SetTitle("Analysis of the coincidences - integrated over time");
 	original_interspill_h->SetTitle("Analysis of the coincidences - 5 minutes after the irradiation");
 	original_interspill_h->SetTitle("");
 
@@ -384,7 +325,6 @@ void Plot::plot_IEEE_interspill ()
 	original_interspill_h->GetYaxis()->SetLabelFont(62);
 	original_interspill_h->GetYaxis()->SetTitleFont(62);
 	original_interspill_h->GetYaxis()->SetRangeUser(0, 2*original_interspill_h->GetMaximum());
-//	original_interspill_h->GetYaxis()->SetRangeUser(0, 50);
 	original_interspill_h->GetYaxis()->SetLabelSize(0.05);
 	original_interspill_h->GetYaxis()->SetTitleSize(0.05);
 	original_interspill_h->GetYaxis()->SetNdivisions(205);
@@ -408,8 +348,6 @@ void Plot::plot_IEEE_interspill ()
 
 	TH1F *dose = (TH1F*)root_file->Get(sdose.c_str());
 
-//	Float_t rightmax = 1.1*dose->GetMaximum();
-//	Float_t scale = gPad->GetUymax()/rightmax;
 
 	Float_t rightmax = 1.1;
 	Float_t scale = gPad->GetUymax()/(1.1*dose->GetMaximum());
@@ -423,9 +361,6 @@ void Plot::plot_IEEE_interspill ()
 	dose->Scale(scale);
 	dose->Draw("same hist");
 	
-	//c1->SetFillColor(5);
-	//gPad->SetFillColor(43);
-
 	c1->Update();
 
 	TGaxis *axis = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(), gPad->GetUxmax(), gPad->GetUymax(), 0, rightmax, 510, "+L");
@@ -450,11 +385,8 @@ void Plot::plot_IEEE_interspill ()
 	
 	TLegend *legend = new TLegend(0.15, 0.65, 0.5, 0.85);
 	legend->SetTextSize(0.04);
-//	legend->SetFillColor(0);
 	legend->AddEntry(original_interspill_h,"Annihilation point","lp");
 	legend->AddEntry(dose,"Dose","lp");
-//	legend->AddEntry((TObject*)0, all_coincidences.str().c_str(), "");
-//	legend->AddEntry((TObject*)0, plastic_coincidences.str().c_str(), "");
 	legend->Draw();
 
 	c1->Update();

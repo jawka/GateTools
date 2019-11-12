@@ -3,6 +3,10 @@
 
 Coincidences::Coincidences(std::string dir_path, std::string scanner_mode, int analysis_mode)
 {
+
+	/*
+	Class constructor
+	*/
 	entries = 0;
 	iterr = 0;
 	barrel_flag = true;
@@ -12,6 +16,7 @@ Coincidences::Coincidences(std::string dir_path, std::string scanner_mode, int a
 	old_file_name = dir_path + std::getenv("PRM_COINC_FILE");
 	new_file_name = dir_path + "extended_sensitivity_results.root";
 
+	// variables for dualhead and barrel definition
 	rsector_barrel = 12; // in fact half of rsector
 	dualhead_crystal = 12; // in fact 13; 12 due to c++ numbering
 	dualhead_module = 3; // in fact one more; as it is due to c++ numbering
@@ -21,12 +26,14 @@ Coincidences::Coincidences(std::string dir_path, std::string scanner_mode, int a
 	std::string aa;
 	aa.push_back(a);
 
-
+	// Checking the sanner mode
 	if (bb.compare(aa) != 0)
 	{
 		barrel_flag = false;
 		//std::cout << "Dualhead mode" << std::endl;
 	}
+
+	// Setup number of modules in dualhead setup 
 	if (res_mode.compare("dualhead_3x4") == 0)
 	{
 		dualhead_module = 3;
@@ -39,6 +46,8 @@ Coincidences::Coincidences(std::string dir_path, std::string scanner_mode, int a
 	{
 		dualhead_module = 5;
 	}
+
+	// Setup the file name // applicable if there is more then one coincidence output file
 	if (default_file_name.compare(old_file_name) != 0)
 	{
 
@@ -60,14 +69,14 @@ Coincidences::Coincidences(std::string dir_path, std::string scanner_mode, int a
 }
 
 
-
+// Destructor
 Coincidences::~Coincidences()
 {
 	Reset();
 }
 
 
-
+// Reset function called with Destructor
 void Coincidences::Reset()
 {
 	entries = 0;
@@ -77,6 +86,9 @@ void Coincidences::Reset()
 
 void Coincidences::init()
 {
+	/*
+	Initializaton method
+	*/
 
 	f = new TFile(old_file_name.c_str(), "READ");
 
@@ -154,7 +166,11 @@ void Coincidences::init()
 
 void Coincidences::extend_sensitivity_FOV()
 {
-		
+	/*
+	Method to prepare the root file for subsequent sensitivity list-mode breation for CASToR usage.
+	Take each coincidence and by applying PET symmetries (x-,y-,z-,xz-,xy-,yz-,xyz-) produce new root file then used for CASToR conversion 
+	*/	
+
 	TFile *f_new = new TFile(new_file_name.c_str(), "RECREATE");
 
 	if( f_new->IsZombie() )
@@ -167,15 +183,12 @@ void Coincidences::extend_sensitivity_FOV()
 	TTree *newtree = CoincidencesChain->CloneTree();
 
 	Int_t nbytes(0);
-	Long64_t print_test = 32368;
 
 	for (Long64_t i=0; i<entries; i++)
 	{
-//		if (i%10000 == 0 && i!= 0)
-//			{std::cout << i/10000 << "0k events analysed." << std::endl;}
 		nbytes += CoincidencesChain->GetEntry(i);
 
-	// ORIGINAL
+	// ORIGINAL POINT
 	//Source Position
 		osourcePosX1 = sourcePosX1;
 		osourcePosY1 = sourcePosY1;
@@ -203,12 +216,6 @@ void Coincidences::extend_sensitivity_FOV()
 		olayerID1 = layerID1;
 		olayerID2 = layerID2;
 
-//		if (i == print_test)
-//		{
-//			std::cout << "i:" << i << std::endl;
-//			std::cout << "FLIP:\trs1 \trs2\tmod1\tmod2\tcr1\tcr2\tlay1\tlay2" << std::endl;
-//			std::cout << "0:\t" << rsectorID1 << "\t" << rsectorID2 << "\t" << moduleID1 << "\t" << moduleID2 << "\t" << crystalID1 << "\t" << crystalID2 << "\t" << layerID1 << "\t" << layerID2 << std::endl;
-//		}
 				
 
 	// FLIP X
@@ -261,10 +268,6 @@ void Coincidences::extend_sensitivity_FOV()
 		}
 	// WRITE FLIP X
 		newtree->Fill();
-//		if (i == print_test)
-//		{
-//			std::cout << "X:\t" << rsectorID1 << "\t" << rsectorID2 << "\t" << moduleID1 << "\t" << moduleID2 << "\t" << crystalID1 << "\t" << crystalID2 << "\t" << layerID1 << "\t" << layerID2 << std::endl;
-//		}
 
 
 
@@ -322,10 +325,6 @@ void Coincidences::extend_sensitivity_FOV()
 		}
 	// WRITE FLIP Y
 		newtree->Fill();
-//		if (i == print_test)
-//		{
-//			std::cout << "Y:\t" << rsectorID1 << "\t" << rsectorID2 << "\t" << moduleID1 << "\t" << moduleID2 << "\t" << crystalID1 << "\t" << crystalID2 << "\t" << layerID1 << "\t" << layerID2 << std::endl;
-//		}
 
 
 
@@ -369,10 +368,6 @@ void Coincidences::extend_sensitivity_FOV()
 		}
 	// WRITE FLIP Z
 		newtree->Fill();
-//		if (i == print_test)
-//		{
-//			std::cout << "Z:\t" << rsectorID1 << "\t" << rsectorID2 << "\t" << moduleID1 << "\t" << moduleID2 << "\t" << crystalID1 << "\t" << crystalID2 << "\t" << layerID1 << "\t" << layerID2 << std::endl;
-//		}
 
 
 
@@ -433,10 +428,6 @@ void Coincidences::extend_sensitivity_FOV()
 		}
 	// WRITE FLIP XY
 		newtree->Fill();
-//		if (i == print_test)
-//		{
-//			std::cout << "XY:\t" << rsectorID1 << "\t" << rsectorID2 << "\t" << moduleID1 << "\t" << moduleID2 << "\t" << crystalID1 << "\t" << crystalID2 << "\t" << layerID1 << "\t" << layerID2 << std::endl;
-//		}
 
 
 
@@ -495,10 +486,6 @@ void Coincidences::extend_sensitivity_FOV()
 		}
 	// WRITE FLIP XZ
 		newtree->Fill();
-//		if (i == print_test)
-//		{
-//			std::cout << "XZ:\t" << rsectorID1 << "\t" << rsectorID2 << "\t" << moduleID1 << "\t" << moduleID2 << "\t" << crystalID1 << "\t" << crystalID2 << "\t" << layerID1 << "\t" << layerID2 << std::endl;
-//		}
 
 
 
@@ -556,10 +543,6 @@ void Coincidences::extend_sensitivity_FOV()
 		}
 	// WRITE FLIP YZ
 		newtree->Fill();
-//		if (i == print_test)
-//		{
-//			std::cout << "YZ:\t" << rsectorID1 << "\t" << rsectorID2 << "\t" << moduleID1 << "\t" << moduleID2 << "\t" << crystalID1 << "\t" << crystalID2 << "\t" << layerID1 << "\t" << layerID2 << std::endl;
-//		}
 
 
 
@@ -618,20 +601,6 @@ void Coincidences::extend_sensitivity_FOV()
 		}
 	// WRITE FLIP XYZ
 		newtree->Fill();
-//		if (i == print_test)
-//		{
-//			std::cout << "XYZ:\t" << rsectorID1 << "\t" << rsectorID2 << "\t" << moduleID1 << "\t" << moduleID2 << "\t" << crystalID1 << "\t" << crystalID2 << "\t" << layerID1 << "\t" << layerID2 << std::endl;
-//		}
-
-
-
-
-
-
-
-
-
-
 
 	}
 

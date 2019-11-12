@@ -181,6 +181,7 @@ public:
 	void spectra_energy_analysis();
 	void rate_analysis();
 	void analysisTIMEPIX();
+
 	// Setters
 	void setPositrons(std::vector<Positron>* vec_positrons);
 	void setProtons(std::vector<Proton>* vec_protons);
