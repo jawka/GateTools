@@ -21,6 +21,10 @@ Coincidences::Coincidences(std::string dir_path, std::string scanner_mode, int a
 	dualhead_crystal = 12; // in fact 13; 12 due to c++ numbering
 	dualhead_module = 3; // in fact one more; as it is due to c++ numbering
 		
+
+	debug = false;	
+
+
 	std::string bb ("b");
 	char a = res_mode.at(0);
 	std::string aa;
@@ -188,6 +192,12 @@ void Coincidences::extend_sensitivity_FOV()
 	{
 		nbytes += CoincidencesChain->GetEntry(i);
 
+	if (rsectorID1 == 0)
+		debug = false;
+	else
+		debug = false;
+	if (debug)
+		std::cout << std::endl << std::endl << "Original rsectorID1: " << rsectorID1 << std::endl;
 	// ORIGINAL POINT
 	//Source Position
 		osourcePosX1 = sourcePosX1;
@@ -217,7 +227,6 @@ void Coincidences::extend_sensitivity_FOV()
 		olayerID2 = layerID2;
 
 				
-
 	// FLIP X
 
 	//Source Position
@@ -238,9 +247,13 @@ void Coincidences::extend_sensitivity_FOV()
 		if (barrel_flag)	
 		{
 			if (orsectorID1 != 0)
-				{rsectorID1 = 2*rsector_barrel - orsectorID1;}
+				rsectorID1 = 2*rsector_barrel - orsectorID1;
+			else
+				rsectorID1 = 0;
 			if (orsectorID2 != 0)
-				{rsectorID2 = 2*rsector_barrel - orsectorID2;}
+				rsectorID2 = 2*rsector_barrel - orsectorID2;
+			else
+				rsectorID2 = 0;
 		}
 //		else
 //		{
@@ -269,7 +282,8 @@ void Coincidences::extend_sensitivity_FOV()
 	// WRITE FLIP X
 		newtree->Fill();
 
-
+       		if (debug)
+                	std::cout << "Flip X rsectorID1: " << rsectorID1 << std::endl;
 
 	// FLIP Y
 
@@ -291,14 +305,14 @@ void Coincidences::extend_sensitivity_FOV()
 		if (barrel_flag)
 		{
 			if (orsectorID1 == 12)
-				{rsectorID1 = 0;}
+				rsectorID1 = 0;
 			else
-				{rsectorID1 = 12*(orsectorID1/12) + 12 - orsectorID1 + 12 * (orsectorID1/12);}
+				rsectorID1 = 12*(orsectorID1/12) + 12 - orsectorID1 + 12 * (orsectorID1/12);
 
 			if (orsectorID2 == 12)
-				{rsectorID2 = 0;}
+				rsectorID2 = 0;
 			else
-				{rsectorID2 = 12*(orsectorID2/12) + 12 - orsectorID2 + 12 * (orsectorID2/12);}
+				rsectorID2 = 12*(orsectorID2/12) + 12 - orsectorID2 + 12 * (orsectorID2/12);
 		}
 		else
 		{
@@ -306,17 +320,17 @@ void Coincidences::extend_sensitivity_FOV()
 			rsectorID2 = 1-orsectorID2;
 		}
 	//moduleID
-//		if (!barrel)
+//		if (!barrel_flag)
 //		{
 //			moduleID1 = 
 //			moduleID2 = 
 //		}
 	//crystalID
-//		if (barrel)
-//		{
-//			crystalID1 = rsector_barrel - ocrystalID1;
-//			crystalID2 = rsector_barrel - ocrystalID2;
-//		}
+		if (barrel_flag)
+		{
+			crystalID1 = rsector_barrel - ocrystalID1;
+			crystalID2 = rsector_barrel - ocrystalID2;
+		}
 	//layerID
 		if (!barrel_flag)
 		{
@@ -325,6 +339,11 @@ void Coincidences::extend_sensitivity_FOV()
 		}
 	// WRITE FLIP Y
 		newtree->Fill();
+
+
+	        if (debug)
+        	        std::cout << "Flip Y rsectorID1: " << rsectorID1 << std::endl;
+
 
 
 
@@ -355,6 +374,12 @@ void Coincidences::extend_sensitivity_FOV()
 			moduleID2 = dualhead_module - omoduleID2;
 		}
 	//crystalID
+                if (barrel_flag)
+                {
+                        crystalID1 = ocrystalID1;
+                        crystalID2 = ocrystalID2;
+                }
+
 		if (!barrel_flag)
 		{
 			crystalID1 = dualhead_crystal - ocrystalID1;
@@ -369,6 +394,8 @@ void Coincidences::extend_sensitivity_FOV()
 	// WRITE FLIP Z
 		newtree->Fill();
 
+                if (debug)
+                        std::cout << "Flip Z rsectorID1: " << rsectorID1 << std::endl;
 
 
 
@@ -389,17 +416,17 @@ void Coincidences::extend_sensitivity_FOV()
 		globalPosY2 = -oglobalPosY2;
 		globalPosZ2 = oglobalPosZ2;
 	//rSectorID
-		if (barrel_flag)
+		if(barrel_flag)
 		{
 			if (orsectorID1 < 12)
-				{rsectorID1 = orsectorID1+12;}
+				rsectorID1 = orsectorID1+12;
 			else
-				{rsectorID1 = orsectorID1-12;}
+				rsectorID1 = orsectorID1-12;
 
 			if (orsectorID2 < 12)
-				{rsectorID2 = orsectorID2+12;}
+				rsectorID2 = orsectorID2+12;
 			else
-				{rsectorID2 = orsectorID2-12;}
+				rsectorID2 = orsectorID2-12;
 		}
 		else
 		{
@@ -429,6 +456,8 @@ void Coincidences::extend_sensitivity_FOV()
 	// WRITE FLIP XY
 		newtree->Fill();
 
+                if (debug)
+                        std::cout << "Flip XY rsectorID1: " << rsectorID1 << std::endl;
 
 
 
@@ -449,12 +478,19 @@ void Coincidences::extend_sensitivity_FOV()
 		globalPosY2 = oglobalPosY2;
 		globalPosZ2 = -oglobalPosZ2;
 	//rSectorID
+                if (debug)
+                        std::cout << "original: " << orsectorID1 << " root: " << rsectorID1 << std::endl;
 		if (barrel_flag)
 		{	
 			if (orsectorID1 != 0)
-				{rsectorID1 = 2*rsector_barrel - orsectorID1;}
+				rsectorID1 = 2*rsector_barrel - orsectorID1;
+			else
+				rsectorID1 = 0;
+
 			if (orsectorID2 != 0)
-				{rsectorID2 = 2*rsector_barrel - orsectorID2;}
+				rsectorID2 = 2*rsector_barrel - orsectorID2;
+			else
+				rsectorID2 = 0;
 		}
 		else
 		{
@@ -488,6 +524,8 @@ void Coincidences::extend_sensitivity_FOV()
 		newtree->Fill();
 
 
+                if (debug)
+                        std::cout << "Flip XZ rsectorID1: " << rsectorID1 << std::endl;
 
 	// FLIP YZ
 
@@ -509,14 +547,14 @@ void Coincidences::extend_sensitivity_FOV()
 		if (barrel_flag)
 		{
 			if (orsectorID1 == 12)
-				{rsectorID1 = 0;}
+				rsectorID1 = 0;
 			else
-				{rsectorID1 = 12*(orsectorID1/12) + 12 - orsectorID1 + 12 * (orsectorID1/12);}
+				rsectorID1 = 12*(orsectorID1/12) + 12 - orsectorID1 + 12 * (orsectorID1/12);
 
 			if (orsectorID2 == 12)
-				{rsectorID2 = 0;}
+				rsectorID2 = 0;
 			else
-				{rsectorID2 = 12*(orsectorID2/12) + 12 - orsectorID2 + 12 * (orsectorID2/12);}
+				rsectorID2 = 12*(orsectorID2/12) + 12 - orsectorID2 + 12 * (orsectorID2/12);
 		}
 		else
 		{
@@ -530,11 +568,11 @@ void Coincidences::extend_sensitivity_FOV()
 //			moduleID2 = 
 //		}
 	//crystalID
-//		if (!barrel_flag)
-//		{
-//			crystalID1 = 
-//			crystalID2 = 
-//		}
+                if (barrel_flag)
+                {
+                        crystalID1 = rsector_barrel - ocrystalID1;
+                        crystalID2 = rsector_barrel - ocrystalID2;
+                }
 	//layerID
 		if (!barrel_flag)
 		{
@@ -544,6 +582,8 @@ void Coincidences::extend_sensitivity_FOV()
 	// WRITE FLIP YZ
 		newtree->Fill();
 
+                if (debug)
+                        std::cout << "Flip YZ rsectorID1: " << rsectorID1 << std::endl;
 
 
 
@@ -567,14 +607,14 @@ void Coincidences::extend_sensitivity_FOV()
 		if (barrel_flag)
 		{
 			if (orsectorID1 < 12)
-				{rsectorID1 = orsectorID1+12;}
+				rsectorID1 = orsectorID1+12;
 			else
-				{rsectorID1 = orsectorID1-12;}
+				rsectorID1 = orsectorID1-12;
 
 			if (orsectorID2 < 12)
-				{rsectorID2 = orsectorID2+12;}
+				rsectorID2 = orsectorID2+12;
 			else
-				{rsectorID2 = orsectorID2-12;}
+				rsectorID2 = orsectorID2-12;
 		}
 //		else
 //		{
@@ -601,6 +641,10 @@ void Coincidences::extend_sensitivity_FOV()
 		}
 	// WRITE FLIP XYZ
 		newtree->Fill();
+
+                if (debug)
+                        std::cout << "Flip XYZ rsectorID1: " << rsectorID1 << std::endl;
+
 
 	}
 

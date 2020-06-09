@@ -131,6 +131,7 @@ public:
 	// Analysis variables	
 	Float_t inbeam_length = 1000000.; //1 ms in nanoseconds	
 	bool barrel_flag;
+	bool debug = false;
 	int mode=0;
 
 	// Inbeam/offbeam counters

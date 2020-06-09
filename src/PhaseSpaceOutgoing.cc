@@ -35,7 +35,7 @@ PhaseSpaceOutgoing::~PhaseSpaceOutgoing()
 
 // Main analysis function
 void PhaseSpaceOutgoing::init()
-{e mode 
+{ 
 
 	/*
 
